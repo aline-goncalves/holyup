@@ -1,0 +1,23 @@
+<div class="relative flex min-h-screen w-full flex-col items-center justify-center p-4 gradient-bg">
+  <div class="w-full max-w-md bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-2xl z-10">
+    <div class="p-6 bg-white rounded-lg text-center">
+      <h2 class="text-3xl font-extrabold text-secondary mb-4">
+        HolyUp!
+      </h2>
+      <p class="text-gray-600 mb-8">
+        Clique para iniciar sua sessão.
+      </p>
+
+      <button
+        (click)="acessarLogin()"
+        class="w-full py-3 px-4 bg-secondary text-white font-semibold rounded-lg shadow-xl transition duration-300 hover:bg-secondary/90 active:scale-95 transform"
+      >
+        Acessar Login
+      </button>
+
+      @if (error()) {
+        <p class="mt-4 text-red-600 text-sm">{{ error() }}</p>
+      }
+    </div>
+  </div>
+</div>

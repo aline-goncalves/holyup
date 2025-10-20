@@ -4,6 +4,8 @@ import { FirebaseApp, getApp, getApps, initializeApp } from 'firebase/app';
 import { Firestore, getFirestore } from 'firebase/firestore';
 import { Auth, getAuth, signInWithCustomToken, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { CommonModule } from '@angular/common';
+import { RouterOutlet } from "@angular/router";
+import { Router } from '@angular/router';
 
 // --- Variáveis Globais (MANDATÓRIO USAR) ---
 declare const __app_id: string; // Mantido para futuras expansões
@@ -21,50 +23,36 @@ const auth = getAuth(firebaseApp);
   selector: 'app-root',
   styles: [],
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
-export class App implements OnInit, OnDestroy {
- // Configuração e Estado de Inicialização do Firebase
-  // Usando '!' para indicar que serão inicializadas no ngOnInit,
-  // o que previne o erro 500 durante o carregamento do módulo.
+export class App implements OnInit {
   private firebaseApp!: FirebaseApp;
   private db!: Firestore;
   private auth!: Auth;
-
-  // --- ESTADOS DO LOGIN/FORMULÁRIO ---
   public loginEmail = signal<string>('');
   public loginPassword = signal<string>('');
   public isSigningIn = signal<boolean>(false);
-  // ------------------------------------
-
-  // Estado da Aplicação (Signals)
   public currentView = signal<AppView>('Loading');
   public userId = signal<string | null>(null);
   public error = signal<string | null>(null);
 
-  /**
-   * Garante que o Firebase App seja inicializado apenas uma vez,
-   * resolvendo o erro 'app/duplicate-app' de forma mais robusta.
-   */
+  public constructor(private router: Router) {}
+
   private initializeFirebaseApp(): FirebaseApp {
-    // 1. Verifica se já existe alguma instância do Firebase inicializada.
     if (getApps().length > 0) {
         console.log("Firebase App já inicializado. Retornando instância existente.");
-        // Retorna a instância padrão (que deve ser a única no nosso caso)
         return getApp();
     }
 
-    // 2. Se não houver app inicializado, inicializa um novo.
     console.log("Inicializando novo Firebase App.");
     return initializeApp(environmentFirebaseConfig);
   }
 
   ngOnInit(): void {
-    // Inicialização do Firebase movida para ngOnInit
     this.firebaseApp = this.initializeFirebaseApp();
     this.db = getFirestore(this.firebaseApp);
     this.auth = getAuth(this.firebaseApp);
@@ -72,18 +60,13 @@ export class App implements OnInit, OnDestroy {
     this.setupFirebaseServices();
   }
 
-  ngOnDestroy(): void {
-    // Não há listeners de Firestore para desinscrever, apenas o listener Auth.
+  public acessarLogin() {
+    this.router.navigate(['/login']);
   }
-
-  // --- Funções de Navegação e Autenticação ---
 
   public navigateTo(view: AppView): void {
     console.log(`Navigating to: ${view}`);
 
-    // Removendo a checagem defensiva problemática.
-    // Signals definidos em classe devem estar presentes.
-    this.error.set(null); // Limpa o erro ao mudar de view
     this.currentView.set(view);
   }
 
@@ -96,15 +79,11 @@ export class App implements OnInit, OnDestroy {
         });
     }
 
-    // Listener de Estado de Autenticação
     onAuthStateChanged(this.auth, (user) => {
       console.log('onAuthStateChanged fired, User:', user ? user.uid : 'null');
-      // Usamos setTimeout(0) para garantir que a navegação ocorra após a conclusão
-      // da pilha de execução síncrona atual (resolvendo o erro de contexto).
       setTimeout(() => {
         if (user) {
           this.userId.set(user.uid);
-          // O onAuthStateChanged (acima) cuidará da navegação para 'Dashboard'
           this.navigateTo('Dashboard');
         } else {
           this.userId.set(null);
@@ -114,11 +93,8 @@ export class App implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Tenta fazer login com E-mail e Senha.
-   */
   public async signInWithEmailPassword(event: Event): Promise<void> {
-    event.preventDefault(); // Evita o refresh da página
+    event.preventDefault();
     this.isSigningIn.set(true);
     this.error.set(null);
 
@@ -127,7 +103,6 @@ export class App implements OnInit, OnDestroy {
 
     try {
       await signInWithEmailAndPassword(this.auth, email, password);
-      // O onAuthStateChanged (acima) cuidará da navegação para 'Dashboard'
     } catch (e: any) {
       console.error("Erro no Login:", e);
       let errorMessage = "Erro de login. Verifique e-mail e senha.";
@@ -142,9 +117,6 @@ export class App implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Tenta criar uma nova conta com E-mail e Senha.
-   */
   public async signUpWithEmailPassword(): Promise<void> {
     this.isSigningIn.set(true);
     this.error.set(null);
@@ -166,7 +138,6 @@ export class App implements OnInit, OnDestroy {
 
     try {
       await createUserWithEmailAndPassword(this.auth, email, password);
-      // O onAuthStateChanged cuidará da navegação para 'Dashboard'
       this.error.set("Conta criada com sucesso! Redirecionando...");
     } catch (e: any) {
       console.error("Erro no Registro:", e);
@@ -180,14 +151,5 @@ export class App implements OnInit, OnDestroy {
     }
   }
 
-  public async logout(): Promise<void> {
-    try {
-        await this.auth.signOut();
-        this.userId.set(null);
-        this.navigateTo('Home');
-    } catch (e) {
-        console.error("Erro ao fazer logout:", e);
-        this.error.set("Falha ao sair. Tente novamente.");
-    }
-  }
+
 }
