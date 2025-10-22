@@ -10,7 +10,7 @@ export interface UserProfile {
   city: string;
   parish: string; // Paróquia
   youthGroup: string; // Grupo de Jovens
-  password: string; // Incluído aqui APENAS para satisfazer o TypeScript no AuthService/RegisterComponent
+  password: string;
   isAdmin: boolean;
 }
 
@@ -53,6 +53,4 @@ export class FirestoreService {
       throw new Error("Falha ao salvar o perfil do usuário.");
     }
   }
-
-  // Você pode adicionar outros métodos de CRUD aqui (ex: getUserProfile, updateProfile, etc.)
 }

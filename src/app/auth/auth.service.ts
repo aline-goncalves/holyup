@@ -1,5 +1,5 @@
 import { Injectable, signal, inject } from '@angular/core';
-import { signInWithCustomToken, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+import { signInWithCustomToken, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'firebase/auth';
 import { Router } from '@angular/router';
 import { Auth } from '@angular/fire/auth';
 import { Firestore, doc, setDoc } from '@angular/fire/firestore';
@@ -71,15 +71,29 @@ export class AuthService {
     try {
       await signInWithEmailAndPassword(this.auth, email, password);
     } catch (e: any) {
-      console.error("Erro no Login:", e);
-      let errorMessage = "Erro de login. Verifique e-mail e senha.";
-      if (e.code === 'auth/user-not-found') {
-        errorMessage = "Usuário não encontrado.";
-      } else if (e.code === 'auth/wrong-password') {
-        errorMessage = "Senha incorreta.";
+      console.error("Erro no Registro:", e);
+      let errorMessage = "Erro desconhecido durante o registro.";
+
+      switch (e.code) {
+        case 'auth/email-already-in-use':
+          errorMessage = "Este e-mail já está registrado.";
+          break;
+        case 'auth/invalid-email':
+          errorMessage = "Formato de e-mail inválido.";
+          break;
+        case 'auth/weak-password':
+          errorMessage = "A senha deve ter pelo menos 6 caracteres.";
+          break;
+        case 'permission-denied':
+          errorMessage = "Falha ao salvar o perfil do usuário. (Verifique as Regras do Firestore)";
+          break;
+        default:
+          errorMessage = e.code ? `Erro de Autenticação: ${e.code}` : "Erro de conexão ou servidor.";
       }
+
       this.error.set(errorMessage);
-      throw new Error(errorMessage);
+      throw new Error("Falha no fluxo de registro: " + errorMessage);
+
     } finally {
       this.isSigningIn.set(false);
     }
@@ -136,20 +150,11 @@ export class AuthService {
     this.error.set(null);
 
     try {
-        // 1. Firebase Auth: Registrar usuário com email e senha
         const userCredential = await createUserWithEmailAndPassword(this.auth, profile.email, password);
         const uid = userCredential.user.uid;
-
-        // 2. Preparar Dados do Perfil para Firestore
-        // 🚨 CRÍTICO: Remova a senha antes de salvar no Firestore por motivos de segurança.
-        // O campo 'password' é removido usando desestruturação, pois só era necessário
-        // para o Firebase Auth e a tipagem temporária.
         const { password: _, ...profileDataToSave } = profile;
 
-        // 3. Firestore: Salvar dados adicionais do perfil
         await this.firestoreService.saveUserProfile(uid, profileDataToSave);
-
-        // Sucesso - o listener onAuthStateChanged cuidará do redirecionamento
         this.error.set(null);
 
     } catch (e: any) {
@@ -165,9 +170,43 @@ export class AuthService {
         }
 
         this.error.set(errorMessage);
-        throw e; // Re-throw para permitir que o componente de registro capture o erro
+        throw e;
     } finally {
         this.isSigningIn.set(false);
+    }
+  }
+
+  /**
+   * Envia o link de redefinição de senha para o e-mail fornecido.
+   * Este é o método que o ForgotPasswordComponent usa.
+   * @param email O e-mail do usuário.
+   */
+  public async resetPassword(email: string): Promise<void> {
+    this.error.set(null);
+    this.isSigningIn.set(true); // Reutilizamos este flag como 'isSending'
+
+    try {
+      await sendPasswordResetEmail(this.auth, email);
+    } catch (e: any) {
+      console.error("Erro ao solicitar reset de senha:", e);
+      let errorMessage = "Erro desconhecido ao tentar enviar o link.";
+
+      switch (e.code) {
+        case 'auth/user-not-found':
+          errorMessage = "O e-mail não corresponde a nenhum usuário registrado.";
+          break;
+        case 'auth/invalid-email':
+          errorMessage = "Formato de e-mail inválido.";
+          break;
+        default:
+          errorMessage = "Não foi possível enviar o e-mail. Tente novamente.";
+      }
+
+      this.error.set(errorMessage);
+      throw new Error(errorMessage);
+
+    } finally {
+      this.isSigningIn.set(false);
     }
   }
 }
