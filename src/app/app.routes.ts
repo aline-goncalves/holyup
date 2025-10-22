@@ -1,9 +1,10 @@
 import { Routes } from '@angular/router';
-import { DashboardComponent } from './dashboard.component/dashboard.component';
-import { LoginComponent } from './login.component/login.component';
-import { ProfileComponent } from './profile.component/profile.component';
-import { LoadingComponent } from './loading.component/loading.component';
-import { HomeComponent } from './home.component/home.component';
+import { DashboardComponent } from './pages/dashboard.component/dashboard.component';
+import { LoginComponent } from './pages/login.component/login.component';
+import { ProfileComponent } from './pages/profile.component/profile.component';
+import { LoadingComponent } from './pages/loading.component/loading.component';
+import { HomeComponent } from './pages/home.component/home.component';
+import { UserRegisterComponent } from './pages/user.register.component/user.register.component';
 
 
 export const routes: Routes = [
@@ -14,6 +15,7 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'dashboard', component: DashboardComponent},
   { path: 'profile', component: ProfileComponent},
+  { path: 'userRegistration', component: UserRegisterComponent},
 
   { path: '**', redirectTo: 'home' }
 ];

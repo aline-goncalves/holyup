@@ -1,0 +1,101 @@
+<div class="max-w-xl mx-auto p-6 bg-white shadow-xl rounded-xl">
+  <h2 class="text-3xl font-bold text-center text-indigo-600 mb-8">Crie sua Conta HolyUp</h2>
+
+  @if(authService.error()){
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+        <span class="block sm:inline">{{ authService.error() }}</span>
+    </div>
+  }
+
+  @if(registrationSuccess()){
+    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+        <span class="block sm:inline">Cadastro concluído! Você será redirecionado para o login.</span>
+    </div>
+  }
+
+  <form (submit)="register($event)" class="space-y-4">
+    <label class="block">
+      <span class="text-gray-700">Nome Completo:</span>
+      <input type="text" placeholder="Seu nome" [(ngModel)]="profile().fullName" name="fullName" required
+        class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+    </label>
+
+    <label class="block">
+      <span class="text-gray-700">E-mail:</span>
+      <input type="email" placeholder="seu@email.com" [(ngModel)]="profile().email" name="email" required
+        class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+    </label>
+
+    <label class="block">
+      <span class="text-gray-700">Senha (mín. 6 caracteres):</span>
+      <input type="password" placeholder="Sua senha" [(ngModel)]="password" name="password" required minlength="6"
+        class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+    </label>
+
+    <div class="grid grid-cols-2 gap-4">
+      <label class="block">
+        <span class="text-gray-700">Data de Nasc.:</span>
+        <input type="date" [(ngModel)]="profile().dob" name="dob" required
+          class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+      </label>
+      <label class="block">
+        <span class="text-gray-700">CPF:</span>
+        <input type="text" placeholder="000.000.000-00" [(ngModel)]="profile().cpf" name="cpf" required
+          class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+      </label>
+    </div>
+
+    <label class="block">
+      <span class="text-gray-700">Fale um pouco sobre você (Bio):</span>
+      <textarea [(ngModel)]="profile().bio" name="bio" rows="3"
+        class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+    </label>
+
+    <div class="grid grid-cols-3 gap-4">
+      <label class="block">
+        <span class="text-gray-700">Cidade:</span>
+        <select [(ngModel)]="profile().city" name="city" required
+          class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+          <option value="" disabled>Selecione</option>
+          <option value="jacarezinho">Jacarezinho</option>
+          <option value="curitiba">Curitiba</option>
+          <option value="sao_paulo">São Paulo</option>
+        </select>
+      </label>
+
+      <label class="block">
+        <span class="text-gray-700">Paróquia:</span>
+        <select [(ngModel)]="profile().parish" name="parish" required
+          class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+          <option value="" disabled>Selecione</option>
+          <option value="ns_aparecida">N.S. Aparecida</option>
+          <option value="sao_jose">São José</option>
+          <option value="santa_terezinha">Santa Terezinha</option>
+        </select>
+      </label>
+
+      <label class="block">
+        <span class="text-gray-700">Grupo de Jovens:</span>
+        <select [(ngModel)]="profile().youthGroup" name="youthGroup" required
+          class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+          <option value="" disabled>Selecione</option>
+          <option value="jovens_em_cristo">Jovens em Cristo</option>
+          <option value="legiao_de_maria">Legião de Maria</option>
+          <option value="rcc">RCC Jovem</option>
+        </select>
+      </label>
+    </div>
+
+    <button type="submit" [disabled]="authService.isSigningIn()"
+      class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 mt-6 rounded-lg transition duration-300 shadow-md disabled:opacity-50">
+      {{ authService.isSigningIn() ? 'Cadastrando...' : 'Finalizar Cadastro' }}
+    </button>
+  </form>
+
+  <p class="text-center text-sm text-gray-500 mt-6">
+    Já tem conta?
+    <button (click)="router.navigate(['/login'])" class="text-indigo-600 hover:text-indigo-800 font-medium">
+      Voltar para Login
+    </button>
+  </p>
+</div>
