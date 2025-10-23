@@ -1,1 +1,13 @@
-/* You can add global styles to this file, and also import other style files */
+@import "tailwindcss";
+
+.gradient-bg {
+  background: linear-gradient(135deg, #FACC15 0%, #4F46E5 100%);
+}
+.text-secondary { color: #4F46E5; }
+.text-primary { color: #FACC15; }
+.bg-primary { background-color: #FACC15; }
+.bg-secondary { background-color: #4F46E5; }
+.text-text-light\/80 { color: rgba(31, 41, 55, 0.8); }
+body{
+  margin: 0;
+}

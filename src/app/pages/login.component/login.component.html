@@ -1,0 +1,31 @@
+<h2 class="text-3xl font-bold text-center text-indigo-600 mb-6">Login</h2>
+
+@if (authService.error()){
+  <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+      <span class="block sm:inline">{{ authService.error() }}</span>
+  </div>
+}
+
+<form (submit)="login($event)" class="space-y-4">
+  <input type="email" placeholder="E-mail" [(ngModel)]="localEmail" name="email" required
+    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+
+  <input type="password" placeholder="Senha" [(ngModel)]="localPassword" name="password" required
+    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+
+  <div class="space-y-4">
+    <button type="submit" [disabled]="authService.isSigningIn()"
+      class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-300 shadow-md disabled:opacity-50">
+      {{ authService.isSigningIn() ? 'Entrando...' : 'Entrar' }}
+    </button>
+
+    <button
+      (click)="backHome()"
+      class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition duration-300">
+      Voltar
+    </button>
+    <div class="text-center mt-2">
+      <p class="text-sm text-gray-600">Esqueceu sua senha? <a class="text-secondary hover:underline dark:text-primary-light" routerLink="/forgotPassword" >Clique aqui</a> para redefini-la</p>
+    </div>
+  </div>
+</form>
